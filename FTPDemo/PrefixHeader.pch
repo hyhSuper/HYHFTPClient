@@ -1,0 +1,19 @@
+//
+//  PrefixHeader.pch
+//  FTPDemo
+//
+//  Created by Allan on 16/11/11.
+//  Copyright © 2016年 Allan. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+#ifdef APP_DEBUG
+#define WLLog(s, ... )  NSLog( @"<%@:(%d)> %@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent],__LINE__, [NSString stringWithFormat:(s), ##__VA_ARGS__] )
+#else
+#define WLLog(format, ...)
+#endif
+
+
+#endif /* PrefixHeader_pch */
