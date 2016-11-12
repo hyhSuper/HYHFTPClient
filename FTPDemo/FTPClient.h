@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #include <CFNetwork/CFNetwork.h>
-#import "WhiteRaccoon.h"
 @class FTPClient;
 @protocol FTPManagerDelegate <NSObject>
 

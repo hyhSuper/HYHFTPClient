@@ -96,9 +96,7 @@
     if(!self.currentDirectory || self.currentDirectory.length<=0){
         [self.client sendRAWCommand:@"PWD"];
     }else{
-        
         [self.client sendChangeWorkDirectory:self.currentDirectory];
-        
     }
 }
 

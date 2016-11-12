@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9D107E5C1DD32AB400C3FEA9 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 9D107E581DD32AB400C3FEA9 /* LICENSE */; };
-		9D107E5D1DD32AB400C3FEA9 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 9D107E591DD32AB400C3FEA9 /* README.md */; };
-		9D107E5E1DD32AB400C3FEA9 /* WhiteRaccoon.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D107E5B1DD32AB400C3FEA9 /* WhiteRaccoon.m */; };
 		9D107E611DD3314100C3FEA9 /* UploadTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D107E601DD3314100C3FEA9 /* UploadTableViewController.m */; };
 		9D107E641DD3315500C3FEA9 /* DownloadTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D107E631DD3315500C3FEA9 /* DownloadTableViewController.m */; };
 		9D207CAE1DD419F600719067 /* CreatDirViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D207CAD1DD419F600719067 /* CreatDirViewController.m */; };
@@ -46,10 +43,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9D107E581DD32AB400C3FEA9 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		9D107E591DD32AB400C3FEA9 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		9D107E5A1DD32AB400C3FEA9 /* WhiteRaccoon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WhiteRaccoon.h; sourceTree = "<group>"; };
-		9D107E5B1DD32AB400C3FEA9 /* WhiteRaccoon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WhiteRaccoon.m; sourceTree = "<group>"; };
 		9D107E5F1DD3314100C3FEA9 /* UploadTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadTableViewController.h; sourceTree = "<group>"; };
 		9D107E601DD3314100C3FEA9 /* UploadTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UploadTableViewController.m; sourceTree = "<group>"; };
 		9D107E621DD3315500C3FEA9 /* DownloadTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadTableViewController.h; sourceTree = "<group>"; };
@@ -110,17 +103,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		9D107E571DD32AB400C3FEA9 /* WhiteRaccoon */ = {
-			isa = PBXGroup;
-			children = (
-				9D107E581DD32AB400C3FEA9 /* LICENSE */,
-				9D107E591DD32AB400C3FEA9 /* README.md */,
-				9D107E5A1DD32AB400C3FEA9 /* WhiteRaccoon.h */,
-				9D107E5B1DD32AB400C3FEA9 /* WhiteRaccoon.m */,
-			);
-			path = WhiteRaccoon;
-			sourceTree = "<group>";
-		};
 		9DE990DE1DD0586A0095282A = {
 			isa = PBXGroup;
 			children = (
@@ -145,7 +127,6 @@
 		9DE990E91DD0586A0095282A /* FTPDemo */ = {
 			isa = PBXGroup;
 			children = (
-				9D107E571DD32AB400C3FEA9 /* WhiteRaccoon */,
 				9DE990ED1DD0586A0095282A /* AppDelegate.h */,
 				9DE990EE1DD0586A0095282A /* AppDelegate.m */,
 				9DE991261DD06D440095282A /* FileListViewController.h */,
@@ -317,7 +298,6 @@
 			files = (
 				9DE990FA1DD0586B0095282A /* LaunchScreen.storyboard in Resources */,
 				9DE990F71DD0586B0095282A /* Assets.xcassets in Resources */,
-				9D107E5C1DD32AB400C3FEA9 /* LICENSE in Resources */,
 				9DE990F51DD0586A0095282A /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -347,14 +327,12 @@
 				9DE991221DD05D000095282A /* FTPClient.m in Sources */,
 				9DE991281DD06D440095282A /* FileListViewController.m in Sources */,
 				9D207CCE1DD59C8F00719067 /* FileModel.m in Sources */,
-				9D107E5D1DD32AB400C3FEA9 /* README.md in Sources */,
 				9D207CCB1DD4628200719067 /* FTPClientManager.m in Sources */,
 				9D107E611DD3314100C3FEA9 /* UploadTableViewController.m in Sources */,
 				9DE990EF1DD0586A0095282A /* AppDelegate.m in Sources */,
 				9D107E641DD3315500C3FEA9 /* DownloadTableViewController.m in Sources */,
 				9D207CAE1DD419F600719067 /* CreatDirViewController.m in Sources */,
 				9DE990EC1DD0586A0095282A /* main.m in Sources */,
-				9D107E5E1DD32AB400C3FEA9 /* WhiteRaccoon.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

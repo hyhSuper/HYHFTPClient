@@ -499,21 +499,21 @@
 }
 -(void)closeComondStream{
     
-    if (self.comondInputStream.streamStatus != NSStreamStatusClosed)
-    {
-        [self.comondInputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        self.comondInputStream.delegate = nil;
-        self.comondInputStream = nil;
-        
-        [self.comondInputStream close];
-    }
-    if (self.comondOutputStream.streamStatus != NSStreamStatusClosed)
-    {
-        [self.comondOutputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        self.comondOutputStream.delegate = nil;
-        self.comondOutputStream = nil;
-        [self.comondOutputStream close];
-    }
+//    if (self.comondInputStream.streamStatus != NSStreamStatusClosed)
+//    {
+//        [self.comondInputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+//        self.comondInputStream.delegate = nil;
+//        self.comondInputStream = nil;
+//        
+//        [self.comondInputStream close];
+//    }
+//    if (self.comondOutputStream.streamStatus != NSStreamStatusClosed)
+//    {
+//        [self.comondOutputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+//        self.comondOutputStream.delegate = nil;
+//        self.comondOutputStream = nil;
+//        [self.comondOutputStream close];
+//    }
     
 }
 -(void)closeAll{

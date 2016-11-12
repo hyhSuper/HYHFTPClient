@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "389945361E9359572F408E0C562BB5E4F9B08BD2",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "389945361E9359572F408E0C562BB5E4F9B08BD2" : 9223372036854775807,
+    "A53B8F3E739B0A1A93B20BCC79FD4C75D0424DCF" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "AE02BAF5-3C3C-4402-AACF-0256DD258D3B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "389945361E9359572F408E0C562BB5E4F9B08BD2" : "HYHFTPClient\/",
+    "A53B8F3E739B0A1A93B20BCC79FD4C75D0424DCF" : "HYHFTPClient\/FTPDemo\/WhiteRaccoon\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "FTPDemo",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "FTPDemo.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/hyhSuper\/HYHFTPClient.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "389945361E9359572F408E0C562BB5E4F9B08BD2"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/valentinradu\/WhiteRaccoon.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "A53B8F3E739B0A1A93B20BCC79FD4C75D0424DCF"
+    }
+  ]
+}
