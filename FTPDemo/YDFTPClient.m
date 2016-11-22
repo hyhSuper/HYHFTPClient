@@ -419,7 +419,7 @@ enum {
 
             break;
         case 227:
-//            [self acceptDataStreamConfiguration:message];
+            [self acceptDataStreamConfiguration:message];
             break;
         case 230: //server logged in
             self.loggedOn=YES;

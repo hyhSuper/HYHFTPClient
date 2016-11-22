@@ -23,6 +23,9 @@
 
 - (void)serverResponseReceived:(NSString *)lastResponseCode message:(NSString *)lastResponseMessage;
 
+- (void)ftpDataTransferComplete;
+
+
 - (void)logginFailed;
 
 - (void)loggedOn;
@@ -30,6 +33,8 @@
 
 @interface FTPClient : NSObject<NSStreamDelegate>
 @property (nonatomic, assign) id<FTPManagerDelegate>       delegate;
+@property (nonatomic, assign) int lastResponseInt;
+@property (nonatomic, strong, readwrite) NSMutableArray *  listEntries;
 
 - (id)initWithServer:(NSString *)server user:(NSString *)username password:(NSString *)pass port:(NSString*)port;
 
@@ -40,6 +45,8 @@
 -(void)sendRAWCommand:(NSString *)command;
 
 -(void)sendChangeWorkDirectory:(NSString*)directory;
+
+-(BOOL)checkConnect;
 
 @end
 

@@ -11,7 +11,7 @@
 #import "UploadTableViewController.h"
 #import "DownloadTableViewController.h"
 #import "CreatDirViewController.h"
-#import "FTPClientManager.h"
+//#import "FTPClientManager.h"
 
 
 
@@ -27,7 +27,7 @@
     self.window = [[UIWindow alloc]initWithFrame:[[UIScreen mainScreen] bounds]];
     
     [self configTableBar];
-    [FTPClientManager shareManager];
+//    [FTPClientManager shareManager];
     [self.window makeKeyAndVisible];
     return YES;
 }

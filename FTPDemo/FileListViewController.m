@@ -13,6 +13,7 @@
 @property(nonatomic,strong)UITableView *tableView;
 @property(nonatomic,strong)UITextField *urlText;
 @property(nonatomic,strong)NSArray *dataArray;
+@property(nonatomic,strong)NSString *currentDirectory;
 @end
 
 @implementation FileListViewController
@@ -20,14 +21,15 @@
 -(instancetype)initWithDirectory:(NSString*)directory{
     self = [super init];
     if (self) {
-        [[FTPClientManager shareManager] listDirectory:directory];
+//        [[FTPClientManager shareManager] listDirectory:directory];
+        self.currentDirectory = directory;
+        
     }
     return self;
 }
 -(id)init{
     self = [super init];
     if (self) {
-        [[FTPClientManager shareManager] listDirectory:nil];
     }
     return self;
 }
@@ -47,16 +49,26 @@
     [bgview addSubview:self.urlText];
     
     self.tableView.tableHeaderView = bgview;
-    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(fileList:) name:kFileListDirectoryNotification object:nil];
+    if (self.currentDirectory.length==0) {
+        self.currentDirectory = @"";
+    }
+    [[FTPClientManager shareManager] listDirectory:self.currentDirectory fileBlock:^(NSArray *fileList) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.dataArray = [[NSMutableArray alloc] initWithArray:fileList];
+            [self.tableView reloadData];
+        });
+    }];
+
     
     
-    
+//    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(fileList:) name:kFileListDirectoryNotification object:nil];
 //    self.dataArray = @[@"listFile",@"upload",@"download",@"creatDir"];
+    
 }
 
 -(void)fileList:(NSNotification*)notification{
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.dataArray = [notification.userInfo objectForKey:FileList];
+//        self.dataArray = [notification.userInfo objectForKey:FileList];
         [self.tableView reloadData];
     });
 }
@@ -86,11 +98,18 @@
     [tableView  deselectRowAtIndexPath:indexPath animated:YES];
     //发送ftp请求
 //    [[YDFTPClient shareClient] sendRAWCommand:self.urlText.text];
-    
+    NSString *directory;
+
     FileModel *fileModel = self.dataArray[indexPath.row];
     if (fileModel.isDirectory) {
-        NSString *directory = [[FTPClientManager shareManager].currentDirectory stringByAppendingString:[NSString stringWithFormat:@"/%@",fileModel.kName]];
+        if (self.currentDirectory.length) {
+            directory = [self.currentDirectory stringByAppendingString:[NSString stringWithFormat:@"/%@",fileModel.kName]];
+        }else{
+            directory = [NSString stringWithFormat:@"/Users/allan/%@",fileModel.kName];
+        }
+//        NSString *directory = fileModel.kName;
         FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
+        
         [self.navigationController pushViewController:vc animated:YES];
     }else{
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];

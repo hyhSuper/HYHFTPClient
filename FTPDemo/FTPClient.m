@@ -7,6 +7,11 @@
 //
 
 #import "FTPClient.h"
+
+#define FTPLIB_BUFSIZ    8192
+#define RESPONSE_BUFSIZ  1024
+
+
 @interface FTPClient()
 
 @property (readwrite, assign) NSString* dataIPAddress;
@@ -16,9 +21,10 @@
 @property (nonatomic, assign, readwrite) size_t            bufferOffset;
 @property (nonatomic, assign, readwrite) size_t            bufferLimit;
 
-@property (nonatomic,assign) int lastResponseInt;
 @property (nonatomic,assign) NSString* lastResponseCode;
+
 @property (nonatomic,assign) NSString* lastCommandSent;
+
 @property (nonatomic,assign) NSString* lastResponseMessage;
 
 
@@ -40,7 +46,6 @@
 @property (nonatomic, assign, readwrite) NSString*         port;
 
 @property (nonatomic, strong, readwrite) NSMutableData *   listData;
-@property (nonatomic, strong, readwrite) NSMutableArray *  listEntries;
 
 @property (nonatomic,assign) BOOL isConnected;
 @property (nonatomic,assign) BOOL loggedOn;
@@ -99,6 +104,11 @@
                        forMode:NSRunLoopCommonModes];
 }
 
+
+-(BOOL)checkConnect{
+    
+    return self.isConnected;
+}
 //-(void)requestDiretory:(NSString*)directory{
 //    [self connect];
 //}
@@ -120,7 +130,7 @@
     self.isDataStreamConfigured=NO;
 }
 //
-- (void)initNetworkCommunication {
+- (void)initNetworkCommunication{
     
     CFReadStreamRef readStream;
     CFWriteStreamRef writeStream;
@@ -153,44 +163,38 @@
     self.isDataStreamConfigured=NO;
     
 }
--(void)dealData:(NSInputStream*)aStream byte:(int)byte{
-    uint8_t buffer[byte];
-    NSInteger len;
-    while ([aStream hasBytesAvailable]) {
-        len = [aStream read:buffer maxLength:sizeof(buffer)];
-        if (len > 0) {
-            NSString *output = [[NSString alloc] initWithBytes:buffer length:len encoding:NSASCIIStringEncoding];
-            if (output) {
-                [self messageReceived:output];
-            }
-            if (aStream == self.dataReadStream ) {
-                [self.listData appendBytes:buffer length:(NSUInteger) len];
-                [self parseListData];
-            }
-        }
-    }
-}
-
-#pragma mark-NSStreamDelegate
-- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode{
+-(void)dealFTPData:(NSStreamEvent)eventCode{
     
     switch (eventCode) {
         case NSStreamEventNone:
             NSLog(@"NSStreamEventNone");
             break;
         case NSStreamEventOpenCompleted:
-            if (aStream == self.comondOutputStream) {
-                NSLog(@"NSStreamEventOpenCompleted");
-            }
+            NSLog(@"NSStreamEventOpenCompleted");
             break;
         case NSStreamEventHasBytesAvailable:
         {
-            if (aStream == self.comondInputStream) {//命令控制
-                [self dealData:self.comondInputStream byte:1024];
-            }else{//数据
-                [self dealData:self.dataReadStream byte:8192];
+            uint8_t buffer[FTPLIB_BUFSIZ];
+            
+            NSInteger len;
+
+            while ([self.dataReadStream hasBytesAvailable]) {
+                len = [self.dataReadStream read:buffer maxLength:sizeof(buffer)];
+                
+                if (len < 0) {
+                    NSLog(@"Network read error");
+                } else if (len == 0) {
+//                    [self stopReceiveWithStatus:nil];
+                    NSLog(@"文件传输完成");
+
+                    [self parseListData];
+                } else {
+                    assert(self.listData != nil);
+                    [self.listData appendBytes:buffer length:(NSUInteger) len];
+                }
             }
         }
+
             break;
         case NSStreamEventHasSpaceAvailable:
         {
@@ -199,18 +203,61 @@
             break;
         case NSStreamEventEndEncountered:
         {
-            NSLog(@"NSStreamEventEndEncountered");
             //数据传输结束、退出
-            if (aStream == self.dataReadStream) {
-                [self logoff];
-                [self.delegate directoryListingFinishedWithSuccess:self.listEntries];
+            [self closeDataStream];
+
+            
+            
+        }
+            break;
+        case NSStreamEventErrorOccurred:
+            NSLog(@"NSStreamEventErrorOccurred");
+            break;
+        default:
+            break;
+    }
+    
+}
+
+-(void)dealComondEventCode:(NSStreamEvent)eventCode{
+    
+    switch (eventCode) {
+        case NSStreamEventNone:
+//            NSLog(@"NSStreamEventNone");
+            break;
+        case NSStreamEventOpenCompleted:
+//            NSLog(@"NSStreamEventOpenCompleted");
+            break;
+        case NSStreamEventHasBytesAvailable:
+        {
+            uint8_t buffer[RESPONSE_BUFSIZ];
+            NSInteger len;
+            while ([self.comondInputStream hasBytesAvailable]) {
+                len = [self.comondInputStream read:buffer maxLength:sizeof(buffer)];
+                NSString *output = [[NSString alloc]initWithBytes:buffer length:len encoding:NSASCIIStringEncoding];
+                if (output) {
+                    [self messageReceived:output];
+                }
             }
+            
+            
+            
+        }
+            break;
+        case NSStreamEventHasSpaceAvailable:
+        {
+//            WLLog(@"NSStreamEventHasSpaceAvailable");
+        }
+            break;
+        case NSStreamEventEndEncountered:
+        {
+            NSLog(@" commond   NSStreamEventEndEncountered");
+            //数据传输结束、退出
         }
             break;
         case NSStreamEventErrorOccurred:
         {//TODO 初始化数据连接和命令链接
             [self.delegate ftpError:@"Network stream error occured"];
-            [self closeAll];
         }
             break;
         default:
@@ -218,50 +265,68 @@
     }
 }
 
+
+#pragma mark-NSStreamDelegate
+- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode{
+    if([aStream isEqual:self.comondInputStream]){//控制连接
+        [self dealComondEventCode:eventCode];
+    }else{//数据连接
+        [self dealFTPData:eventCode];
+    }
+}
+
 - (void)messageReceived:(NSString *)message {
+    
     NSLog(@"message = %@",message);
-    self.lastResponseCode = [message substringToIndex:3];
-    self.lastResponseMessage= message;
+    if(message.length>3) self.lastResponseCode    =  [message substringToIndex:3];
+    self.lastResponseMessage =  message;
     
     int response = [self.lastResponseCode intValue];
+    
     self.lastResponseInt= response;
+    
+    [self.delegate serverResponseReceived:self.lastResponseCode message:self.lastResponseMessage];
+
     switch (response) {
         case 150:
             //connection accepted
             break;
         case 200:
             [self sendCommand:@"PASV"];
+            break;
+        case 211:
+            break;
         case 220: //server welcome message so wait for username
             [self sendUsername];
             break;
         case 221://命令控制连接关闭
-            [self closeAll];
+            self.isConnected = NO;
             break;
         case 226:
             //transfer OK 传输完成
         {
 //            NSLog(@"文件传输完成,关闭数据传输");
-//            [self closeDataStream];
+            [self closeAll];
         }
             break;
         case 227://进入被动模式成功
-            
+//            [self  closeDataStream];
+//            [self sendCommand:@"TYPE A"];
             [self acceptDataStreamConfiguration:message];
             
             break;
         case 230: //server logged in
-            self.loggedOn=YES;
-            
-            [self sendCommand:@"PASV"];
-            
+            self.loggedOn = YES;
             [self.delegate loggedOn];
-            
+            [self sendCommand:@"PASV"];
             break;
         case 250:// Requested file action okay, completed.
 //            [self sendListComend];
             break;
         case 257://PATHNAME created
             NSLog(@"PATHNAME created");
+//            [self sendCommand:@"PASV"];
+
             break;
         case 331: //server waiting for password
             [self sendPassword];
@@ -303,7 +368,6 @@
             break;
     }
     
-    [self.delegate serverResponseReceived:self.lastResponseCode message:self.lastResponseMessage];
 
 }
 
@@ -339,7 +403,10 @@
 {
     [self.listEntries addObjectsFromArray:newEntries];
 //    [self closeAll];
-    //    [self.delegate directoryListingFinishedWithSuccess:self.listEntries];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(directoryListingFinishedWithSuccess:)]) {
+        [self.delegate directoryListingFinishedWithSuccess:self.listEntries];
+    }
+
 }
 
 - (void)parseListData
@@ -417,7 +484,6 @@
             NSString *cmdToSend = [NSString stringWithFormat:@"%@\r\n",cmd];
             self.lastCommandSent= cmdToSend;
             NSData *data = [[NSData alloc] initWithData:[cmdToSend dataUsingEncoding:NSASCIIStringEncoding]];
-//            numberOfBytesSent+=[data length];
             [self.comondOutputStream write:[data bytes] maxLength:[data length]];
         }
         else
@@ -477,7 +543,6 @@
         
         self.isDataStreamAvailable=YES;
         NSLog(@"创建数据链路");
-
         if (self.delegate && [self.delegate respondsToSelector:@selector(dataStreamBuildSucess:)]) {
             [self.delegate dataStreamBuildSucess:self];
         }
@@ -495,32 +560,33 @@
         [self.dataWriteStream close];
         self.dataWriteStream = nil;
     }
-    
+    self.isDataStreamAvailable=NO;
+    self.isDataStreamConfigured=NO;
+    [self.listEntries removeAllObjects];
+    self.listData = [[NSMutableData alloc]init];
 }
 -(void)closeComondStream{
     
-//    if (self.comondInputStream.streamStatus != NSStreamStatusClosed)
-//    {
-//        [self.comondInputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-//        self.comondInputStream.delegate = nil;
-//        self.comondInputStream = nil;
-//        
-//        [self.comondInputStream close];
-//    }
-//    if (self.comondOutputStream.streamStatus != NSStreamStatusClosed)
-//    {
-//        [self.comondOutputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-//        self.comondOutputStream.delegate = nil;
-//        self.comondOutputStream = nil;
-//        [self.comondOutputStream close];
-//    }
+    if (self.comondInputStream.streamStatus != NSStreamStatusClosed)
+    {
+        [self.comondInputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        self.comondInputStream.delegate = nil;
+        self.comondInputStream = nil;
+        
+        [self.comondInputStream close];
+    }
+    if (self.comondOutputStream.streamStatus != NSStreamStatusClosed)
+    {
+        [self.comondOutputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        self.comondOutputStream.delegate = nil;
+        self.comondOutputStream = nil;
+        [self.comondOutputStream close];
+    }
     
 }
 -(void)closeAll{
     [self closeComondStream];
-    [self closeDataStream];
+//    [self closeDataStream];
     self.isConnected=NO;
-    self.isDataStreamAvailable=NO;
-    self.isDataStreamConfigured=NO;
 }
 @end

@@ -16,7 +16,7 @@
 
 @interface FTPClientManager : NSObject
 @property(nonatomic,strong)FTPClient *client;
-@property(nonatomic,strong)NSString *currentDirectory;
+@property(nonatomic,strong)NSString *workingDirectory;
 
 +(instancetype)shareManager;
 
@@ -25,5 +25,8 @@
 //-(void)requestDiretory:(NSString*)directory;
 
 -(void)listDirectory:(NSString*)directory;
+
+-(void)listDirectory:(NSString*)directory fileBlock:(void(^)(NSArray *fileList))blcok;
+
 
 @end
