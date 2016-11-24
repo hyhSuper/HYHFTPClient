@@ -11,23 +11,14 @@
 #define kFTPpassword @"1"
 #import "FTPClientManager.h"
 
-typedef enum {
-    FMCurrentActionUploadFile    = 1,             //上传
-    FMCurrentActionCreateNewFolder,        //创建文件夹
-    FMCurrentActionFileList,               //文件列表
-    FMCurrentActionDownloadFile,           //下载
-    FMCurrentActionSOCKET,
-    MCurrentActionNone
-} FMCurrentAction;
-
-
 typedef void(^FileListBlock)(NSArray*fileList);
-
+typedef void(^Complication)(BOOL isSuccess);
 @interface FTPClientManager ()
 
-@property(nonatomic,assign)FMCurrentAction currentAction;
 @property(nonatomic,strong)FileListBlock   fileListBlock;
 @property(nonatomic,copy)NSString *currentDirectory;
+@property(nonatomic,copy)NSString *downloadFilePath;
+@property(nonatomic,strong)Complication  downloadComplication;
 @end
 
 @implementation FTPClientManager
@@ -53,7 +44,7 @@ typedef void(^FileListBlock)(NSArray*fileList);
 -(void)listDirectory:(NSString*)directory fileBlock:(void(^)(NSArray *fileList))blcok
 {
     self.currentDirectory = directory;
-    self.currentAction = FMCurrentActionFileList;
+    self.client.currentAction = FMCurrentActionFileList;
 //    if ([self.client checkConnect]) {
 //        [self.client sendRAWCommand:[NSString stringWithFormat:@"CWD %@",directory]];
 //    }else{
@@ -63,17 +54,37 @@ typedef void(^FileListBlock)(NSArray*fileList);
     self.fileListBlock = blcok;
 }
 
+-(void)downloadfile:(NSString*)remotePath localPath:(NSString*)localPath progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication{
+    
+    self.client.currentAction = FMCurrentActionDownloadFile;
+    self.downloadFilePath = remotePath;
+    self.client.downloadLoaclPath = localPath;
+    
+    [self.client connect];
+    
+    self.client.downloadProgress  = progress;
+    
+    self.downloadComplication = complication;
+    
+//    self.
+    
+}
+
+
 
 - (void)ftpUploadFinishedWithSuccess:(BOOL)success{
     
 }
 
 - (void)ftpDownloadFinishedWithSuccess:(BOOL)success{
+    WLLog(@"ftpDownloadFinishedWithSuccess");
     
+    self.downloadComplication(success);
+    
+    [self.client disconnect];
 }
 
 - (void)directoryListingFinishedWithSuccess:(NSArray *)arr{
-    
 //    WLLog(@"文件列表arr.cout = %@",arr);
     NSMutableArray *fileArray =[NSMutableArray array];
     for (int i = 0 ; i<arr.count; i++) {
@@ -81,7 +92,6 @@ typedef void(^FileListBlock)(NSArray*fileList);
         [fileArray addObject:file];
     }
     self.fileListBlock(fileArray);
-    
 }
 
 
@@ -94,7 +104,7 @@ typedef void(^FileListBlock)(NSArray*fileList);
 - (void)serverResponseReceived:(NSString *)lastResponseCode message:(NSString *)lastResponseMessage{
     
     WLLog(@"code = %@,message = %@",lastResponseCode,lastResponseMessage);
-    if(self.currentAction == FMCurrentActionFileList){
+    if(self.client.currentAction == FMCurrentActionFileList){
         if([lastResponseCode intValue] == 257){//当前工作目录
             
             if (self.currentDirectory.length) {
@@ -110,6 +120,17 @@ typedef void(^FileListBlock)(NSArray*fileList);
         }else if([lastResponseCode integerValue] == 250){
              [self.client sendRAWCommand:@"LIST"];
         }
+    }else if(self.client.currentAction == FMCurrentActionDownloadFile){
+        
+        if ([lastResponseCode intValue] == 213) {
+            
+            
+            
+            
+            
+        }
+        
+        
     }
     
     
@@ -126,16 +147,17 @@ typedef void(^FileListBlock)(NSArray*fileList);
 
 - (void)dataStreamBuildSucess:(FTPClient*)client{
     
-    if (self.currentAction == FMCurrentActionFileList) {
-        
-//        [self.client sendRAWCommand:@"LIST"];
-
-        
+    if (self.client.currentAction == FMCurrentActionFileList) {
         if (self.currentDirectory.length) {
             [self.client sendRAWCommand:[NSString stringWithFormat:@"CWD %@",self.currentDirectory]];
         }else{
-            [self.client sendRAWCommand:@"PWD"];
+            [self.client sendRAWCommand:@"LIST"];
         }
+    }else if(self.client.currentAction == FMCurrentActionDownloadFile){
+        
+        [self.client sendRAWCommand:[NSString stringWithFormat:@"RETR %@",self.downloadFilePath]];
+        
+        
     }
     
     

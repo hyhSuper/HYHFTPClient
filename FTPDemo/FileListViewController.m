@@ -50,28 +50,19 @@
     
     self.tableView.tableHeaderView = bgview;
     if (self.currentDirectory.length==0) {
-        self.currentDirectory = @"";
+        self.currentDirectory = @"/";
     }
     [[FTPClientManager shareManager] listDirectory:self.currentDirectory fileBlock:^(NSArray *fileList) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.dataArray = [[NSMutableArray alloc] initWithArray:fileList];
             [self.tableView reloadData];
+            [[FTPClientManager shareManager].client disconnect];
         });
     }];
 
     
-    
-//    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(fileList:) name:kFileListDirectoryNotification object:nil];
-//    self.dataArray = @[@"listFile",@"upload",@"download",@"creatDir"];
-    
 }
 
--(void)fileList:(NSNotification*)notification{
-    dispatch_async(dispatch_get_main_queue(), ^{
-//        self.dataArray = [notification.userInfo objectForKey:FileList];
-        [self.tableView reloadData];
-    });
-}
 
 -(void)viewDidDisappear:(BOOL)animated{
     [[NSNotificationCenter defaultCenter]removeObserver:self];
@@ -105,9 +96,10 @@
         if (self.currentDirectory.length) {
             directory = [self.currentDirectory stringByAppendingString:[NSString stringWithFormat:@"/%@",fileModel.kName]];
         }else{
-            directory = [NSString stringWithFormat:@"/Users/allan/%@",fileModel.kName];
+            directory = [NSString stringWithFormat:@"/%@",fileModel.kName];
         }
 //        NSString *directory = fileModel.kName;
+//        directory = [directory stringByAddingPercentEscapesUsingEncoding:kCFStringEncodingUTF8];
         FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
         
         [self.navigationController pushViewController:vc animated:YES];
@@ -120,6 +112,20 @@
         
         UIAlertAction *downlAction= [UIAlertAction actionWithTitle:@"下载" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             NSLog(@"下载");
+          NSString * directory = [self.currentDirectory stringByAppendingString:[NSString stringWithFormat:@"/%@",fileModel.kName]];
+            NSString *localPath = [NSString stringWithFormat:@"%@/%@",FTPDownLoadDir,fileModel.kName];
+            
+            [[FTPClientManager shareManager]downloadfile:directory localPath:localPath progress:^(NSInteger receviedByes, NSInteger totalByes) {
+                
+                WLLog(@"receviedByes=%ld",receviedByes);
+            } handleComplication:^(BOOL isSuccess) {
+                
+            }];
+//            [[FTPClientManager shareManager]downloadfile:directory localPath:localPath progress:^(NSInteger receviedByes, NSUInteger totalByes) {
+//                 
+//             } handleComplication:^(BOOL isSuccess) {
+//                 
+//             }];
         }];
         
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {

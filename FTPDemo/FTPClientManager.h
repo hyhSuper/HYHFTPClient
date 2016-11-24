@@ -24,9 +24,13 @@
 
 //-(void)requestDiretory:(NSString*)directory;
 
--(void)listDirectory:(NSString*)directory;
+//-(void)listDirectory:(NSString*)directory;
 
 -(void)listDirectory:(NSString*)directory fileBlock:(void(^)(NSArray *fileList))blcok;
+
+
+-(void)downloadfile:(NSString*)remotePath localPath:(NSString*)localPath progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication;
+
 
 
 @end

@@ -29,6 +29,7 @@
     [self configTableBar];
 //    [FTPClientManager shareManager];
     [self.window makeKeyAndVisible];
+    [self creatDownloadDirectory];
     return YES;
 }
 
@@ -48,6 +49,20 @@
     [bar setViewControllers:@[nav1,nav2,nav3,nav4]];
     
     self.window.rootViewController =bar;
+}
+-(void)creatDownloadDirectory{
+    
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSString *pathDocuments = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    //    NSString *createPath = [NSString stringWithFormat:@"%@/Dowload", pathDocuments];
+    NSString *createDir = [NSString stringWithFormat:@"%@/FTPDowload", pathDocuments];
+    // 判断文件夹是否存在，如果不存在，则创建
+    if (![[NSFileManager defaultManager] fileExistsAtPath:createDir]) {
+        //        [fileManager createDirectoryAtPath:createPath withIntermediateDirectories:YES attributes:nil error:nil];
+        [fileManager createDirectoryAtPath:createDir withIntermediateDirectories:YES attributes:nil error:nil];
+    } else {
+        NSLog(@"FileDir is exists.");
+    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

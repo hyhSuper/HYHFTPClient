@@ -32,12 +32,14 @@
 @property (nonatomic,strong)NSOutputStream *dataWriteStream;
 
 //@property (nonatomic, strong, readwrite) NSInputStream *   uploadStream;
-//@property (nonatomic, strong, readwrite) NSOutputStream *  downloadfileStream;
+
+@property (nonatomic, strong, readwrite) NSOutputStream *  downloadfileStream;
 
 @property (nonatomic,retain, strong) NSInputStream   *comondInputStream;
 
 @property (nonatomic, retain,strong) NSOutputStream  *comondOutputStream;
 
+@property (nonatomic,assign)NSInteger      downloadBytes;
 
 
 @property (nonatomic, assign, readwrite) NSString*         ftpServer;
@@ -46,6 +48,7 @@
 @property (nonatomic, assign, readwrite) NSString*         port;
 
 @property (nonatomic, strong, readwrite) NSMutableData *   listData;
+@property (nonatomic, strong, readwrite) NSMutableData *   downloadData;
 
 @property (nonatomic,assign) BOOL isConnected;
 @property (nonatomic,assign) BOOL loggedOn;
@@ -70,6 +73,7 @@
         self.port = port;
         self.listData = [[NSMutableData alloc]init];
         self.listEntries = [[NSMutableArray alloc]init];
+        self.downloadData = [[NSMutableData alloc]init];
     }
     return self;
 }
@@ -126,8 +130,14 @@
     [self sendCommand:@"QUIT"];
     [self closeDataStream];
     self.isConnected=NO;
-    self.isDataStreamAvailable=NO;
-    self.isDataStreamConfigured=NO;
+    self.isDataStreamAvailable  =NO;
+    self.isDataStreamConfigured =NO;
+    if (self.currentAction == FMCurrentActionDownloadFile) {
+        [self.downloadfileStream close];
+        self.downloadfileStream = nil;
+        WLLog(@"退出下载");
+    }
+    
 }
 //
 - (void)initNetworkCommunication{
@@ -171,6 +181,11 @@
             break;
         case NSStreamEventOpenCompleted:
             NSLog(@"NSStreamEventOpenCompleted");
+            if (self.currentAction ==FMCurrentActionDownloadFile) {
+                self.downloadfileStream = [NSOutputStream outputStreamToFileAtPath:self.downloadLoaclPath append:YES];
+                [self.downloadfileStream open];
+            }
+            
             break;
         case NSStreamEventHasBytesAvailable:
         {
@@ -185,12 +200,45 @@
                     NSLog(@"Network read error");
                 } else if (len == 0) {
 //                    [self stopReceiveWithStatus:nil];
-                    NSLog(@"文件传输完成");
-
-                    [self parseListData];
+                    if (self.currentAction == FMCurrentActionFileList) {
+                        [self parseListData];
+                    }else if(self.currentAction == FMCurrentActionDownloadFile){
+                        if(self.delegate&& [self.delegate respondsToSelector:@selector(ftpDownloadFinishedWithSuccess:)]){
+                            [self.delegate ftpDownloadFinishedWithSuccess:YES];
+  
+//                            NSLog(@"文件传输完成");
+                        }
+                    }
+                    
+                    
                 } else {
                     assert(self.listData != nil);
-                    [self.listData appendBytes:buffer length:(NSUInteger) len];
+                    if (self.currentAction == FMCurrentActionFileList) {
+                        [self.listData appendBytes:buffer length:(NSUInteger) len];
+                    }else if (self.currentAction == FMCurrentActionDownloadFile){
+                        
+//                        [self.downloadData appendBytes:buffer length:(NSUInteger) len];
+                        
+                        NSInteger   bytesWritten;
+                        NSInteger   bytesWrittenSoFar;
+                        bytesWrittenSoFar = 0;
+                        do {
+                            bytesWritten = [self.downloadfileStream write:&buffer[bytesWrittenSoFar] maxLength:(NSUInteger) (len - bytesWrittenSoFar)];
+                            if (bytesWritten == -1) {
+                                [self.delegate ftpDownloadFinishedWithSuccess:NO];
+                                break;
+                            } else {
+                                bytesWrittenSoFar += bytesWritten;
+                            }
+                            self.downloadBytes +=bytesWritten;
+                            
+                            self.downloadProgress(self.downloadBytes,0);
+                        } while (bytesWrittenSoFar != len);
+
+
+                    }
+                    
+                    
                 }
             }
         }
@@ -204,7 +252,7 @@
         case NSStreamEventEndEncountered:
         {
             //数据传输结束、退出
-            [self closeDataStream];
+//            [self closeDataStream];
 
             
             
@@ -239,9 +287,6 @@
                     [self messageReceived:output];
                 }
             }
-            
-            
-            
         }
             break;
         case NSStreamEventHasSpaceAvailable:
@@ -256,7 +301,7 @@
         }
             break;
         case NSStreamEventErrorOccurred:
-        {//TODO 初始化数据连接和命令链接
+        {
             [self.delegate ftpError:@"Network stream error occured"];
         }
             break;
@@ -295,30 +340,27 @@
             [self sendCommand:@"PASV"];
             break;
         case 211:
+            
             break;
         case 220: //server welcome message so wait for username
             [self sendUsername];
             break;
         case 221://命令控制连接关闭
-            self.isConnected = NO;
+//            self.isConnected = NO;
+            [self closeComondStream];
             break;
         case 226:
             //transfer OK 传输完成
         {
-//            NSLog(@"文件传输完成,关闭数据传输");
-            [self closeAll];
         }
             break;
         case 227://进入被动模式成功
-//            [self  closeDataStream];
-//            [self sendCommand:@"TYPE A"];
             [self acceptDataStreamConfiguration:message];
-            
             break;
         case 230: //server logged in
             self.loggedOn = YES;
             [self.delegate loggedOn];
-            [self sendCommand:@"PASV"];
+            [self sendCommand:@"TYPE I"];
             break;
         case 250:// Requested file action okay, completed.
 //            [self sendListComend];
@@ -334,6 +376,12 @@
             break;
         case 421:
             NSLog(@"服务不可用，控制连接关闭");
+            [self closeDataStream];
+            self.isConnected=NO;
+            self.isDataStreamAvailable  =NO;
+            self.isDataStreamConfigured =NO;
+            [self closeComondStream];
+            
             break;
         case 425:
             NSLog(@"打开数据连接失败");
@@ -445,7 +493,7 @@
     if ([newEntries count] != 0) {
         [self addListEntries:newEntries];
     }
-    if (offset != 0) {
+    if (offset != 0 && self.listData.length>= offset) {
         [self.listData replaceBytesInRange:NSMakeRange(0, offset) withBytes:NULL length:0];
     }
     
@@ -585,7 +633,7 @@
     
 }
 -(void)closeAll{
-    [self closeComondStream];
+//    [self closeComondStream];
 //    [self closeDataStream];
     self.isConnected=NO;
 }

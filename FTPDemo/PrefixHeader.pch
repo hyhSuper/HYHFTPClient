@@ -9,11 +9,13 @@
 #ifndef PrefixHeader_pch
 #define PrefixHeader_pch
 
-#ifdef APP_DEBUG
+#ifdef  DEBUG
 #define WLLog(s, ... )  NSLog( @"<%@:(%d)> %@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent],__LINE__, [NSString stringWithFormat:(s), ##__VA_ARGS__] )
 #else
 #define WLLog(format, ...)
 #endif
+
+#define FTPDownLoadDir  ([NSString stringWithFormat:@"%@/FTPDowload",[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]])
 
 
 #endif /* PrefixHeader_pch */

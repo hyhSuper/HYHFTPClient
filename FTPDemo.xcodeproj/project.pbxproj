@@ -13,7 +13,6 @@
 		9D34CEDE1DDD8C4C00FBE58A /* FileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D34CED91DDD8C4C00FBE58A /* FileModel.m */; };
 		9D34CEDF1DDD8C4C00FBE58A /* FTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D34CEDB1DDD8C4C00FBE58A /* FTPClient.m */; };
 		9D34CEE01DDD8C4C00FBE58A /* FTPClientManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D34CEDD1DDD8C4C00FBE58A /* FTPClientManager.m */; };
-		9D648CC51DE299BF009A2FB6 /* YDFTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D648CC41DE299BF009A2FB6 /* YDFTPClient.m */; };
 		9DE990EC1DD0586A0095282A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9DE990EB1DD0586A0095282A /* main.m */; };
 		9DE990EF1DD0586A0095282A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9DE990EE1DD0586A0095282A /* AppDelegate.m */; };
 		9DE990F51DD0586A0095282A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DE990F31DD0586A0095282A /* Main.storyboard */; };
@@ -56,8 +55,6 @@
 		9D34CEDB1DDD8C4C00FBE58A /* FTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPClient.m; sourceTree = "<group>"; };
 		9D34CEDC1DDD8C4C00FBE58A /* FTPClientManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTPClientManager.h; sourceTree = "<group>"; };
 		9D34CEDD1DDD8C4C00FBE58A /* FTPClientManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPClientManager.m; sourceTree = "<group>"; };
-		9D648CC31DE299BF009A2FB6 /* YDFTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YDFTPClient.h; sourceTree = "<group>"; };
-		9D648CC41DE299BF009A2FB6 /* YDFTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YDFTPClient.m; sourceTree = "<group>"; };
 		9D648CC61DE2C1F3009A2FB6 /* InterfaceBuilderKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InterfaceBuilderKit.framework; path = Library/Frameworks/InterfaceBuilderKit.framework; sourceTree = DEVELOPER_DIR; };
 		9DE990E71DD0586A0095282A /* FTPDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FTPDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DE990EB1DD0586A0095282A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -128,8 +125,6 @@
 		9DE990E91DD0586A0095282A /* FTPDemo */ = {
 			isa = PBXGroup;
 			children = (
-				9D648CC31DE299BF009A2FB6 /* YDFTPClient.h */,
-				9D648CC41DE299BF009A2FB6 /* YDFTPClient.m */,
 				9D34CED81DDD8C4C00FBE58A /* FileModel.h */,
 				9D34CED91DDD8C4C00FBE58A /* FileModel.m */,
 				9D34CEDA1DDD8C4C00FBE58A /* FTPClient.h */,
@@ -334,7 +329,6 @@
 				9D34CEDE1DDD8C4C00FBE58A /* FileModel.m in Sources */,
 				9DE990EC1DD0586A0095282A /* main.m in Sources */,
 				9D34CEDF1DDD8C4C00FBE58A /* FTPClient.m in Sources */,
-				9D648CC51DE299BF009A2FB6 /* YDFTPClient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

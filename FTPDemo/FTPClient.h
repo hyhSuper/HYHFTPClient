@@ -8,7 +8,20 @@
 
 #import <Foundation/Foundation.h>
 #include <CFNetwork/CFNetwork.h>
+
+typedef enum {
+    FMCurrentActionUploadFile    = 1,             //上传
+    FMCurrentActionCreateNewFolder,        //创建文件夹
+    FMCurrentActionFileList,               //文件列表
+    FMCurrentActionDownloadFile,           //下载
+    FMCurrentActionSOCKET,
+    MCurrentActionNone
+} FMCurrentAction;
+
+typedef  void(^Progress)(NSInteger receviedByes,NSInteger totalByes);
+
 @class FTPClient;
+
 @protocol FTPManagerDelegate <NSObject>
 
 - (void)ftpUploadFinishedWithSuccess:(BOOL)success;
@@ -29,12 +42,26 @@
 - (void)logginFailed;
 
 - (void)loggedOn;
+
+
 @end
 
 @interface FTPClient : NSObject<NSStreamDelegate>
+
 @property (nonatomic, assign) id<FTPManagerDelegate>       delegate;
+
 @property (nonatomic, assign) int lastResponseInt;
+
 @property (nonatomic, strong, readwrite) NSMutableArray *  listEntries;
+
+@property (nonatomic, assign)FMCurrentAction currentAction;
+
+@property (nonatomic,  copy)NSString *downloadLoaclPath;
+
+@property (nonatomic,strong)Progress downloadProgress;
+
+@property (nonatomic,strong)Progress uploadProgress;
+
 
 - (id)initWithServer:(NSString *)server user:(NSString *)username password:(NSString *)pass port:(NSString*)port;
 
