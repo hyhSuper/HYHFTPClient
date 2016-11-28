@@ -25,11 +25,16 @@
 //-(void)requestDiretory:(NSString*)directory;
 
 //-(void)listDirectory:(NSString*)directory;
-
+//文件列表
 -(void)listDirectory:(NSString*)directory fileBlock:(void(^)(NSArray *fileList))blcok;
 
-
+//下载
 -(void)downloadfile:(NSString*)remotePath localPath:(NSString*)localPath progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication;
+
+//上传
+-(void)upload:(NSData*)data remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication;
+
+
 
 
 

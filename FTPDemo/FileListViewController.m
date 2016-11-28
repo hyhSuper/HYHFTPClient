@@ -14,6 +14,8 @@
 @property(nonatomic,strong)UITextField *urlText;
 @property(nonatomic,strong)NSArray *dataArray;
 @property(nonatomic,strong)NSString *currentDirectory;
+@property(nonatomic,strong)NSIndexPath *selectIndexPath;
+
 @end
 
 @implementation FileListViewController
@@ -90,7 +92,7 @@
     //发送ftp请求
 //    [[YDFTPClient shareClient] sendRAWCommand:self.urlText.text];
     NSString *directory;
-
+    self.selectIndexPath = indexPath;
     FileModel *fileModel = self.dataArray[indexPath.row];
     if (fileModel.isDirectory) {
         if (self.currentDirectory.length) {
@@ -100,9 +102,59 @@
         }
 //        NSString *directory = fileModel.kName;
 //        directory = [directory stringByAddingPercentEscapesUsingEncoding:kCFStringEncodingUTF8];
-        FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
+//        FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
         
-        [self.navigationController pushViewController:vc animated:YES];
+        
+        
+        UIAlertController *alertVC = [UIAlertController alertControllerWithTitle:@"功能列表" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+        UIAlertAction *pushSubVCAction = [UIAlertAction actionWithTitle:@"进入下级文件目录" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
+            [self.navigationController pushViewController:vc animated:YES];
+        }];
+        
+        UIAlertAction *createNewDir = [UIAlertAction actionWithTitle:@"在当前目录中新建文件夹" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            
+//            NSString *newPath =[NSString stringWithFormat:@"%@/AllanTest",fileHandle.path];
+//            BOOL isSucess = [[FTPManager shareManager].client createDirectoryAtPath:newPath];
+//            if (isSucess) {
+//                NSString *directory = [NSString stringWithFormat:@"%@/%@",self.directory,fileHandle.name];
+//                FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
+//                [self.navigationController pushViewController:vc animated:YES];
+//            }
+            
+        }];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+            
+        }];
+        
+        UIAlertAction *uploadFile = [UIAlertAction actionWithTitle:@"上传文件到当前目录" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            
+            UIImagePickerController *pickVC= [[UIImagePickerController alloc]init];
+            //            pickVC.allowsEditing = YES;
+            pickVC.delegate =  self;
+            [self presentViewController:pickVC animated:YES completion:^{
+                
+            }];
+            
+        }];
+        
+        [alertVC addAction:pushSubVCAction];
+        
+        [alertVC addAction:createNewDir];
+        
+        [alertVC addAction:uploadFile];
+        
+        [alertVC addAction:cancelAction];
+
+        
+        [self presentViewController:alertVC animated:YES completion:^{
+            
+        }];
+        
+        
+        
+        
+        
     }else{
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
         UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"删除" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
@@ -138,6 +190,41 @@
         [self presentViewController:alertController animated:YES completion:nil];
     }
 }
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo {
+    
+    //    [picker dismissViewControllerAnimated:YES completion:^{
+    //        WLLog(@"editingInfo = %@",editingInfo);
+    //
+    //    }];
+    FileModel *fileHandle = self.dataArray[self.selectIndexPath.row];
+    NSString *remotePath = [NSString stringWithFormat:@"%@/%@/Test.png",self.currentDirectory,fileHandle.kName];
+    
+    NSData *imageData = UIImagePNGRepresentation(image);
+    
+
+    [[FTPClientManager shareManager] upload:imageData remoteDirectory:remotePath progress:^(NSInteger receviedByes, NSInteger totalByes) {
+        
+        
+        WLLog(@"上传receviedByes = %ld,totalByets = %ld",receviedByes,totalByes);
+        
+    } handleComplication:^(BOOL isSuccess) {
+        
+        [picker dismissViewControllerAnimated:YES completion:nil];
+
+        if (isSuccess) {
+            NSString *directory = [NSString stringWithFormat:@"%@/%@",self.currentDirectory,fileHandle.kName];
+            FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
+            [self.navigationController pushViewController:vc animated:YES];
+        }else{
+            WLLog(@"上传失败");
+        }
+    }];
+    
+    
+}
+
+
 
 -(UITableView*)tableView{
     if (!_tableView) {

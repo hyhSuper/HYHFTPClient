@@ -19,6 +19,8 @@ typedef void(^Complication)(BOOL isSuccess);
 @property(nonatomic,copy)NSString *currentDirectory;
 @property(nonatomic,copy)NSString *downloadFilePath;
 @property(nonatomic,strong)Complication  downloadComplication;
+@property(nonatomic,strong)Complication  uploadComplication;
+
 @end
 
 @implementation FTPClientManager
@@ -70,6 +72,23 @@ typedef void(^Complication)(BOOL isSuccess);
     
 }
 
+-(void)upload:(NSData*)data remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication{
+    
+    self.client.currentAction = FMCurrentActionUploadFile;
+    
+    self.client.uploadRemotePath = directory;
+    
+    self.client.uploadData = data;
+    
+    self.client.uploadProgress = progress;
+    
+    self.uploadComplication = complication;
+
+    [self.client connect];
+    
+    
+    
+}
 
 
 - (void)ftpUploadFinishedWithSuccess:(BOOL)success{
@@ -98,7 +117,8 @@ typedef void(^Complication)(BOOL isSuccess);
 
 - (void)ftpError:(NSString *)err{
     WLLog(@"错误原因：%@",err);
-    
+    [self.client disconnect];
+
 }
 
 - (void)serverResponseReceived:(NSString *)lastResponseCode message:(NSString *)lastResponseMessage{
@@ -154,8 +174,10 @@ typedef void(^Complication)(BOOL isSuccess);
             [self.client sendRAWCommand:@"LIST"];
         }
     }else if(self.client.currentAction == FMCurrentActionDownloadFile){
-        
         [self.client sendRAWCommand:[NSString stringWithFormat:@"RETR %@",self.downloadFilePath]];
+    }else if (self.client.currentAction == FMCurrentActionUploadFile){
+        
+        [self.client sendRAWCommand:[NSString stringWithFormat:@"STOR %@",self.client.uploadRemotePath]];
         
         
     }

@@ -57,7 +57,8 @@ typedef  void(^Progress)(NSInteger receviedByes,NSInteger totalByes);
 @property (nonatomic, assign)FMCurrentAction currentAction;
 
 @property (nonatomic,  copy)NSString *downloadLoaclPath;
-
+@property (nonatomic,  copy)NSString *uploadRemotePath;
+@property (nonatomic,strong)NSData   *uploadData;
 @property (nonatomic,strong)Progress downloadProgress;
 
 @property (nonatomic,strong)Progress uploadProgress;
