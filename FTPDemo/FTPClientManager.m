@@ -56,6 +56,26 @@ typedef void(^Complication)(BOOL isSuccess);
     self.fileListBlock = blcok;
 }
 
+-(void)deletFile:(NSString*)remoteFilePath
+{
+    self.client.currentAction = FMCurrentActionDeleteFile;
+    self.client.deletRemotePath = remoteFilePath;
+    [self.client connect];
+
+}
+
+-(void)createRemoteDirectory:(NSString*)directoryPath
+{
+    self.client.currentAction = FMCurrentActionCreateNewFolder;
+    
+    self.client.creatNewDirectoyPath = directoryPath;
+    
+    [self.client connect];
+
+}
+
+
+
 -(void)downloadfile:(NSString*)remotePath localPath:(NSString*)localPath progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication{
     
     self.client.currentAction = FMCurrentActionDownloadFile;
@@ -85,9 +105,7 @@ typedef void(^Complication)(BOOL isSuccess);
     self.uploadComplication = complication;
 
     [self.client connect];
-    
-    
-    
+
 }
 -(void)uploadFile:(NSString*)localFilePath remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication{
     self.client.currentAction = FMCurrentActionUploadFile;
@@ -108,7 +126,11 @@ typedef void(^Complication)(BOOL isSuccess);
 - (void)ftpUploadFinishedWithSuccess:(BOOL)success{
     if (success) {
         WLLog(@"ftpUploadFinishedWithSuccess");
+    }else{
+        
     }
+    
+    self.uploadComplication(success);
     [self.client disconnect];
 }
 
@@ -169,8 +191,6 @@ typedef void(^Complication)(BOOL isSuccess);
         
         
     }
-    
-    
 }
 
 - (void)logginFailed{
@@ -196,16 +216,18 @@ typedef void(^Complication)(BOOL isSuccess);
         
         [self.client sendRAWCommand:[NSString stringWithFormat:@"STOR %@",self.client.uploadRemotePath]];
         
+    }else if(self.client.currentAction == FMCurrentActionCreateNewFolder){
+        [self.client sendRAWCommand:[NSString stringWithFormat:@"MKD %@",self.client.creatNewDirectoyPath]];
+        
+    }else if(self.client.currentAction == FMCurrentActionDeleteFile){
+        
+        [self.client sendRAWCommand:[NSString stringWithFormat:@"DELE %@",self.client.deletRemotePath]];
+        
+        
     }
     
     
     
-    
-//    if(!self.currentDirectory || self.currentDirectory.length<=0){
-//        [self.client sendRAWCommand:@"PWD"];
-//    }else{
-//        [self.client sendChangeWorkDirectory:self.currentDirectory];
-//    }
     
     
     

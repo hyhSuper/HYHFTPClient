@@ -37,6 +37,8 @@
 //
 -(void)uploadFile:(NSString*)localFilePath remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication;
 
-
-
+//删除远程服务文件
+-(void)deletFile:(NSString*)remoteFilePath;
+//创建文件夹
+-(void)createRemoteDirectory:(NSString*)directoryPath;
 @end

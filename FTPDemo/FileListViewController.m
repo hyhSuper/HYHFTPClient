@@ -114,8 +114,9 @@
         
         UIAlertAction *createNewDir = [UIAlertAction actionWithTitle:@"在当前目录中新建文件夹" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             
-//            NSString *newPath =[NSString stringWithFormat:@"%@/AllanTest",fileHandle.path];
-//            BOOL isSucess = [[FTPManager shareManager].client createDirectoryAtPath:newPath];
+            NSString *newPath =[NSString stringWithFormat:@"%@/AllanTest",self.currentDirectory];
+            
+            [[FTPClientManager shareManager]createRemoteDirectory:newPath];
 //            if (isSucess) {
 //                NSString *directory = [NSString stringWithFormat:@"%@/%@",self.directory,fileHandle.name];
 //                FileListViewController *vc = [[FileListViewController alloc]initWithDirectory:directory];
@@ -159,6 +160,10 @@
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
         UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"删除" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             NSLog(@"删除");
+            NSString *deletFilePath = [NSString stringWithFormat:@"%@/%@",self.currentDirectory,fileModel.kName];
+            
+            [[FTPClientManager shareManager]deletFile:deletFilePath];
+            
         }];
 
         

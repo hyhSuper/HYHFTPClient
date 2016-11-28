@@ -14,6 +14,7 @@ typedef enum {
     FMCurrentActionCreateNewFolder,        //创建文件夹
     FMCurrentActionFileList,               //文件列表
     FMCurrentActionDownloadFile,           //下载
+    FMCurrentActionDeleteFile,             //删除
     FMCurrentActionSOCKET,
     MCurrentActionNone
 } FMCurrentAction;
@@ -58,6 +59,9 @@ typedef  void(^Progress)(NSInteger receviedByes,NSInteger totalByes);
 
 @property (nonatomic,  copy)NSString *downloadLoaclPath;
 @property (nonatomic,  copy)NSString *uploadRemotePath;
+@property (nonatomic,  copy)NSString *creatNewDirectoyPath;
+@property (nonatomic,  copy)NSString *deletRemotePath;
+
 @property (nonatomic,strong)NSData   *uploadData;
 
 @property (nonatomic,  copy)NSString *localFilePath;
