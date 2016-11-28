@@ -19,6 +19,7 @@
 
 @property (nonatomic, assign) uint8_t *         buffer;
 @property (nonatomic, assign, readwrite) size_t            bufferOffset;
+
 @property (nonatomic, assign, readwrite) size_t            bufferLimit;
 
 @property (nonatomic,assign) NSString* lastResponseCode;
@@ -140,7 +141,7 @@
         self.downloadfileStream = nil;
         WLLog(@"退出下载");
     }
-    
+    self.uploadData = nil;
 }
 //
 - (void)initNetworkCommunication{
@@ -201,7 +202,6 @@
                 if (len < 0) {
                     NSLog(@"Network read error");
                 } else if (len == 0) {
-//                    [self stopReceiveWithStatus:nil];
                     if (self.currentAction == FMCurrentActionFileList) {
                         [self parseListData];
                     }else if(self.currentAction == FMCurrentActionDownloadFile){
@@ -242,79 +242,55 @@
         {
             NSLog(@"NSStreamEventHasSpaceAvailable");
             if (self.currentAction == FMCurrentActionUploadFile){
-                
-                // If we don't have any data buffered, go read the next chunk of data.
-//                if (self.bufferOffset == self.bufferLimit) {
-//                    NSInteger   bytesRead;
-//                    bytesRead = [self.dataReadStream read:self.buffer maxLength:kSendBufferSize];
-//                    if (bytesRead == -1) {
-//                        [self.delegate ftpError:@"can't read fileupload stream"];
-////                        [self closeAll];
-//                    } else if (bytesRead == 0) {
-//                        WLLog(@"上传结束");
-//                    } else {
-//                        self.bufferOffset = 0;
-//                        self.bufferLimit  = bytesRead;
-//                    }
-//                }
-                
-
-                // If we're not out of data completely, send the next chunk.
-//                if (self.bufferOffset < self.bufferLimit) {
-//                    NSInteger   bytesWritten;
-//                    bytesWritten = [self.dataWriteStream write:&self.buffer[self.bufferOffset] maxLength:self.bufferLimit-self.bufferOffset];
-//                    // assert(bytesWritten != 0);
-//                    if (bytesWritten == -1) {
-//                        [self.delegate ftpError:@"can't read data stream"];
-////                        [self closeAll];
-//                    } else
-//                    {
-//                        self.bufferOffset  +=  bytesWritten;
-//                        self.uploadBytes  +=  bytesWritten;
-//                        self.uploadProgress(self.uploadBytes,self.uploadData.length);
-//                    }
-//                }
-                
-                
-                if (self.dataReadStream.streamStatus == NSStreamStatusOpen) {
+                if (self.localFilePath.length) {
                     
-                    NSInteger totaleLenth = self.uploadData.length;
-                    NSInteger   bytesWritten;
-
-                    if (totaleLenth - self.uploadBytes >= kSendBufferSize) {
-                        [self.uploadData getBytes:self.buffer range:NSMakeRange(self.uploadBytes,kSendBufferSize)];
-                        bytesWritten = [self.dataWriteStream write:self.buffer maxLength:kSendBufferSize];
-                    }else if(totaleLenth == self.uploadBytes){
-                        return;
-                    }else{
-                        [self.uploadData getBytes:self.buffer range:NSMakeRange(self.uploadBytes,totaleLenth - self.uploadBytes)];
-                        bytesWritten = [self.dataWriteStream write:self.buffer maxLength:totaleLenth - self.uploadBytes];
+                    if (self.bufferOffset == self.bufferLimit) {
+                        NSInteger bytesRead ;
+                        bytesRead = [self.dataReadStream read:self.buffer maxLength:kSendBufferSize];
+                        
+                        if (bytesRead == -1) {
+                            [self.delegate ftpError:@"读数据失败"];
+                        }else if(bytesRead == 0){
+                            WLLog(@"buffer读完");
+                            [self.delegate ftpUploadFinishedWithSuccess:YES];
+                            
+                            
+                        }else
+                        {
+                            self.bufferOffset =0;
+                            self.bufferLimit = bytesRead;
+                        }
                     }
-//                    NSInteger   bytesWritten;
-//                    bytesWritten = [self.dataWriteStream write:self.buffer maxLength:kSendBufferSize];
+                    if (self.bufferOffset<self.bufferLimit) {
+                        NSInteger bytesWritten = [self.dataWriteStream write:&self.buffer[self.bufferOffset] maxLength:self.bufferLimit-self.bufferOffset];
+                        
+                        if (bytesWritten == -1) {
+                            [self.delegate ftpError:@"写入数据失败"];
+                        }else{
+                            self.bufferOffset += bytesWritten;
+                            self.uploadBytes +=bytesWritten;
+                            self.uploadProgress(self.uploadBytes,0);
+                            
+                        }
+                    }
                     
-                    if(bytesWritten == -1){
-                        [self.delegate ftpError:@"can't read fileupload stream"];
-                    }else if(bytesWritten == 0){
-                        WLLog(@"写入完成");
-                    }else{
-                        WLLog(@"bytesWritten = %ld = %d",bytesWritten,kSendBufferSize);
-                        self.uploadBytes += bytesWritten;
-                        bytesWritten = 0;
-                        self.uploadProgress(self.uploadBytes,self.uploadData.length);
-                    }
+                    
+                    
+                }else{
+                    [self handleUploadFileData];
                 }
-                
             }
 
         }
             break;
         case NSStreamEventEndEncountered:
         {
-            //数据传输结束、退出
-//            [self closeDataStream];
-            if (self.currentAction ==FMCurrentActionUploadFile) {
+            if (self.currentAction ==FMCurrentActionUploadFile && self.dataWriteStream.streamStatus == NSStreamStatusAtEnd) {
                 WLLog(@"上传成功");
+                if (self.delegate && [self.delegate respondsToSelector:@selector(ftpUploadFinishedWithSuccess:)]) {
+                    [self.delegate ftpUploadFinishedWithSuccess:YES];
+                }
+                
             }
             
             
@@ -327,6 +303,35 @@
             break;
     }
     
+}
+
+
+-(void)handleUploadFileData{
+    if (self.dataReadStream.streamStatus == NSStreamStatusOpen) {
+        
+        NSInteger totaleLenth = self.uploadData.length;
+        NSInteger   bytesWritten;
+        if (totaleLenth - self.uploadBytes >= kSendBufferSize) {
+            [self.uploadData getBytes:self.buffer range:NSMakeRange(self.uploadBytes,kSendBufferSize)];
+            bytesWritten = [self.dataWriteStream write:self.buffer maxLength:kSendBufferSize];
+        }else if(totaleLenth == self.uploadBytes){
+            return;
+        }else{
+            [self.uploadData getBytes:self.buffer range:NSMakeRange(self.uploadBytes,totaleLenth - self.uploadBytes)];
+            bytesWritten = [self.dataWriteStream write:self.buffer maxLength:totaleLenth - self.uploadBytes];
+        }
+        if(bytesWritten == -1){
+            [self.delegate ftpError:@"can't read fileupload stream"];
+        }else if(bytesWritten == 0){
+            WLLog(@"写入完成");
+        }else{
+            WLLog(@"bytesWritten = %ld = %d",bytesWritten,kSendBufferSize);
+            self.uploadBytes += bytesWritten;
+            bytesWritten = 0;
+            self.uploadProgress(self.uploadBytes,self.uploadData.length);
+        }
+    }
+
 }
 
 -(void)dealComondEventCode:(NSStreamEvent)eventCode{
@@ -655,8 +660,10 @@
                 waitUntilDone:YES];
         [self.dataWriteStream open];
         
+        if (self.localFilePath.length) {
+            self.dataReadStream = [NSInputStream inputStreamWithFileAtPath:self.localFilePath];
+        }
         [self.dataReadStream open];
-        
         self.isDataStreamAvailable=YES;
         NSLog(@"创建数据链路");
         if (self.delegate && [self.delegate respondsToSelector:@selector(dataStreamBuildSucess:)]) {

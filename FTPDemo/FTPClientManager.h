@@ -34,7 +34,8 @@
 //上传
 -(void)upload:(NSData*)data remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication;
 
-
+//
+-(void)uploadFile:(NSString*)localFilePath remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication;
 
 
 

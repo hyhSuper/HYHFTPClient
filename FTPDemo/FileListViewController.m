@@ -173,11 +173,6 @@
             } handleComplication:^(BOOL isSuccess) {
                 
             }];
-//            [[FTPClientManager shareManager]downloadfile:directory localPath:localPath progress:^(NSInteger receviedByes, NSUInteger totalByes) {
-//                 
-//             } handleComplication:^(BOOL isSuccess) {
-//                 
-//             }];
         }];
         
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -190,7 +185,7 @@
         [self presentViewController:alertController animated:YES completion:nil];
     }
 }
-
+#pragma mark-UIImagePickerControllerDelegate
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo {
     
     //    [picker dismissViewControllerAnimated:YES completion:^{

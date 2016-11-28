@@ -89,10 +89,27 @@ typedef void(^Complication)(BOOL isSuccess);
     
     
 }
+-(void)uploadFile:(NSString*)localFilePath remoteDirectory:(NSString*)directory  progress:(Progress)progress handleComplication:(void(^)(BOOL isSuccess))complication{
+    self.client.currentAction = FMCurrentActionUploadFile;
+    
+    self.client.uploadRemotePath = directory;
+    
+    self.client.localFilePath = localFilePath;
+    
+    self.client.uploadProgress = progress;
+    
+    self.uploadComplication = complication;
+    
+    [self.client connect];
+
+}
 
 
 - (void)ftpUploadFinishedWithSuccess:(BOOL)success{
-    
+    if (success) {
+        WLLog(@"ftpUploadFinishedWithSuccess");
+    }
+    [self.client disconnect];
 }
 
 - (void)ftpDownloadFinishedWithSuccess:(BOOL)success{
@@ -178,7 +195,6 @@ typedef void(^Complication)(BOOL isSuccess);
     }else if (self.client.currentAction == FMCurrentActionUploadFile){
         
         [self.client sendRAWCommand:[NSString stringWithFormat:@"STOR %@",self.client.uploadRemotePath]];
-        
         
     }
     
